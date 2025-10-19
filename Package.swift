@@ -6,11 +6,11 @@ import PackageDescription
 let package = Package(
     name: "swift-huggingface",
     platforms: [
-        .macOS(.v13),
-        .macCatalyst(.v13),
+        .macOS(.v14),
+        .macCatalyst(.v14),
         .iOS(.v16),
-        .watchOS(.v9),
-        .tvOS(.v16),
+        .watchOS(.v10),
+        .tvOS(.v17),
         .visionOS(.v1),
     ],
     products: [
@@ -35,10 +35,16 @@ let package = Package(
             path: "Sources/InferenceProviders"
         ),
         .target(
+            name: "OAuth",
+            path: "Sources/OAuth",
+            exclude: ["README.md"]
+        ),
+        .target(
             name: "HuggingFace",
             dependencies: [
                 .target(name: "Hub"),
                 .target(name: "InferenceProviders"),
+                .target(name: "OAuth"),
             ],
             path: "Sources/HuggingFace"
         ),

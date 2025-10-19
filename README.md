@@ -9,7 +9,7 @@ for running AI tasks like chat completion, text-to-image generation, and more.
 ## Requirements
 
 - Swift 6.0+
-- macOS 13.0+ / iOS 16.0+ / watchOS 9.0+ / tvOS 16.0+ / visionOS 1.0+
+- macOS 14.0+ / iOS 17.0+ / watchOS 10.0+ / tvOS 17.0+ / visionOS 1.0+
 
 ## Installation
 
@@ -25,10 +25,11 @@ dependencies: [
 
 ## Usage
 
-This package provides two main APIs in the `HuggingFace` module:
+This package provides three main APIs in the `HuggingFace` module:
 
 - **Hub API**: For managing models, datasets, spaces, and repositories on Hugging Face
 - **Inference Providers API**: For running AI tasks like chat completion, text-to-image generation, and more
+- **OAuth API**: For secure user authentication using OAuth 2.0 with PKCE
 
 ### Hub API
 
@@ -835,4 +836,99 @@ let response = try await client.speechToText(
 )
 
 print("Transcription: \(response.text)")
+```
+
+---
+
+
+### OAuth Authentication
+
+The OAuth API provides secure user authentication using OAuth 2.0 with PKCE (Proof Key for Code Exchange). 
+This allows your app to authenticate users and access their Hugging Face resources on their behalf.
+
+#### Basic Authentication Setup
+
+```swift
+import HuggingFace
+
+// Create an authentication manager
+let authManager = try HuggingFaceAuthenticationManager(
+    clientID: "your_client_id",
+    redirectURL: URL(string: "yourapp://oauth/callback")!,
+    scope: [.openid, .profile, .email],
+    keychainService: "com.yourapp.huggingface",
+    keychainAccount: "user_token"
+)
+
+// Sign in the user
+try await authManager.signIn()
+
+// Get a valid token for API calls
+let token = try await authManager.getValidToken()
+```
+
+#### Available OAuth Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `openid` | Get the ID token in addition to the access token |
+| `profile` | Get the user's profile information (username, avatar, etc.) |
+| `email` | Get the user's email address |
+| `readBilling` | Know whether the user has a payment method set up |
+| `readRepos` | Get read access to the user's personal repos |
+| `writeRepos` | Get write/read access to the user's personal repos |
+| `manageRepos` | Get full access to the user's personal repos |
+| `inferenceAPI` | Get access to the Inference API |
+| `writeDiscussions` | Open discussions and Pull Requests on behalf of the user |
+
+#### Predefined Scope Sets
+
+| Set | Scopes Included |
+|-----|----------------|
+| `.basic` | `openid`, `profile`, `email` |
+| `.readAccess` | `openid`, `profile`, `email`, `readRepos` |
+| `.writeAccess` | `openid`, `profile`, `email`, `writeRepos` |
+| `.fullAccess` | `openid`, `profile`, `email`, `manageRepos`, `inferenceAPI` |
+| `.inferenceOnly` | `openid`, `inferenceAPI` |
+| `.discussions` | `openid`, `profile`, `email`, `writeDiscussions` |
+
+#### Integrating OAuth with Hub API
+
+```swift
+// Create authenticated Hub client using OAuth token
+let hubClient = Client(
+    host: Client.defaultHost,
+    bearerToken: try await authManager.getValidToken()
+)
+
+// Now you can access user-specific resources
+let userInfo = try await hubClient.whoami()
+print("Authenticated as: \(userInfo.name)")
+
+// Create repositories on behalf of the user
+let repo = try await hubClient.createRepo(
+    kind: .model,
+    name: "my-model",
+    organization: nil,
+    visibility: .private
+)
+```
+
+#### Integrating OAuth with Inference API
+
+```swift
+// Create authenticated Inference client using OAuth token
+let inferenceClient = InferenceClient(
+    host: URL(string: "https://router.huggingface.co")!,
+    bearerToken: try await authManager.getValidToken()
+)
+
+// Make inference requests on behalf of the user
+let response = try await inferenceClient.chatCompletion(
+    model: "meta-llama/Llama-3.3-70B-Instruct",
+    messages: [
+        .user("Hello! How can I help you today?")
+    ],
+    provider: .groq
+)
 ```
