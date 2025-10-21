@@ -9,6 +9,6 @@ extension HubClient {
     /// - Returns: OAuth user information.
     /// - Throws: An error if the request fails or the response cannot be decoded.
     public func getOAuthUserInfo() async throws -> OAuth.UserInfo {
-        return try await fetch(.get, "/oauth/userinfo")
+        return try await httpClient.fetch(.get, "/oauth/userinfo")
     }
 }

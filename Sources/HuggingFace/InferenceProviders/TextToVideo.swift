@@ -109,7 +109,7 @@ extension InferenceClient {
             params["motion_strength"] = .double(motionStrength)
         }
 
-        return try await fetch(.post, "/v1/videos/generations", params: params)
+        return try await httpClient.fetch(.post, "/v1/videos/generations", params: params)
     }
 }
 

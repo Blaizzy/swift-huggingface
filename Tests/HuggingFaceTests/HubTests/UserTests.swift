@@ -89,7 +89,7 @@ import Testing
 
             let client = createMockClient()  // No bearer token
 
-            await #expect(throws: HubClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.whoami()
             }
         }
@@ -117,7 +117,7 @@ import Testing
 
             let client = createMockClient(bearerToken: "invalid_token")
 
-            await #expect(throws: HubClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.whoami()
             }
         }

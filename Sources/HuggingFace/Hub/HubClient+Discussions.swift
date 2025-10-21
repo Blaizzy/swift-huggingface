@@ -46,7 +46,7 @@ extension HubClient {
             let numberOfClosedDiscussions: Int?
         }
 
-        let response: Response = try await fetch(.get, apiPath, params: params)
+        let response: Response = try await httpClient.fetch(.get, apiPath, params: params)
         return (response.discussions, response.count, response.start, response.numberOfClosedDiscussions)
     }
 
@@ -67,7 +67,7 @@ extension HubClient {
     ) async throws -> Discussion {
         let repoTypePath = kind.pluralized
         let apiPath = "/api/\(repoTypePath)/\(id.namespace)/\(id.name)/discussions/\(number)"
-        return try await fetch(.get, apiPath)
+        return try await httpClient.fetch(.get, apiPath)
     }
 
     // MARK: - Add Comment
@@ -91,7 +91,7 @@ extension HubClient {
         let apiPath = "/api/\(repoTypePath)/\(id.namespace)/\(id.name)/discussions/\(number)/comment"
 
         let params: [String: Value] = ["comment": .string(comment)]
-        let result: Bool = try await fetch(.post, apiPath, params: params)
+        let result: Bool = try await httpClient.fetch(.post, apiPath, params: params)
         return result
     }
 
@@ -112,7 +112,7 @@ extension HubClient {
     ) async throws -> Bool {
         let repoTypePath = kind.pluralized
         let apiPath = "/api/\(repoTypePath)/\(id.namespace)/\(id.name)/discussions/\(number)/merge"
-        let result: Bool = try await fetch(.post, apiPath)
+        let result: Bool = try await httpClient.fetch(.post, apiPath)
         return result
     }
 
@@ -133,7 +133,7 @@ extension HubClient {
     ) async throws -> Bool {
         let repoTypePath = kind.pluralized
         let apiPath = "/api/\(repoTypePath)/\(id.namespace)/\(id.name)/discussions/\(number)/pin"
-        let result: Bool = try await fetch(.post, apiPath)
+        let result: Bool = try await httpClient.fetch(.post, apiPath)
         return result
     }
 
@@ -158,7 +158,7 @@ extension HubClient {
         let apiPath = "/api/\(repoTypePath)/\(id.namespace)/\(id.name)/discussions/\(number)/status"
 
         let params: [String: Value] = ["status": .string(status.rawValue)]
-        let result: Bool = try await fetch(.patch, apiPath, params: params)
+        let result: Bool = try await httpClient.fetch(.patch, apiPath, params: params)
         return result
     }
 
@@ -183,7 +183,7 @@ extension HubClient {
         let apiPath = "/api/\(repoTypePath)/\(id.namespace)/\(id.name)/discussions/\(number)/title"
 
         let params: [String: Value] = ["title": .string(title)]
-        let result: Bool = try await fetch(.patch, apiPath, params: params)
+        let result: Bool = try await httpClient.fetch(.patch, apiPath, params: params)
         return result
     }
 
@@ -197,7 +197,7 @@ extension HubClient {
     public func markDiscussionsAsRead(_ discussionNumbers: [Int]) async throws -> Bool {
         let apiPath = "/api/discussions/mark-as-read"
         let params: [String: Value] = ["discussionNums": .array(discussionNumbers.map { .int($0) })]
-        let result: Bool = try await fetch(.post, apiPath, params: params)
+        let result: Bool = try await httpClient.fetch(.post, apiPath, params: params)
         return result
     }
 }

@@ -8,6 +8,6 @@ extension HubClient {
     /// - Returns: Information about the authenticated user.
     /// - Throws: An error if the request fails or the response cannot be decoded.
     public func whoami() async throws -> User {
-        return try await fetch(.get, "/api/whoami-v2")
+        return try await httpClient.fetch(.get, "/api/whoami-v2")
     }
 }

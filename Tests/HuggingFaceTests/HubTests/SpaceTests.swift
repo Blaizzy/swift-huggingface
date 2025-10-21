@@ -263,7 +263,7 @@ import Testing
             let client = createMockClient()
             let repoID: Repo.ID = "nonexistent/space"
 
-            await #expect(throws: HubClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.getSpace(repoID)
             }
         }

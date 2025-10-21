@@ -231,7 +231,7 @@ import Testing
             let client = createMockClient()
             let repoID: Repo.ID = "nonexistent/model"
 
-            await #expect(throws: HubClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.getModel(repoID)
             }
         }
@@ -261,7 +261,7 @@ import Testing
             let client = createMockClient()
             let repoID: Repo.ID = "private/model"
 
-            await #expect(throws: HubClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.getModel(repoID)
             }
         }

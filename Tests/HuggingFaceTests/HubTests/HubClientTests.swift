@@ -6,15 +6,15 @@ import Testing
 @Suite("Hub Client Tests")
 struct HubClientTests {
     @Test("Client can be initialized with default configuration")
-    func testDefaultClientInitialization() {
+    func testDefaultClientInitialization() async {
         let client = HubClient.default
         #expect(client.host == URL(string: "https://huggingface.co/")!)
         #expect(client.userAgent == nil)
-        #expect(client.bearerToken == nil)
+        #expect(await client.bearerToken == nil)
     }
 
     @Test("Client can be initialized with custom configuration")
-    func testCustomClientInitialization() {
+    func testCustomClientInitialization() async {
         let host = URL(string: "https://huggingface.co")!
         let userAgent = "TestApp/1.0"
         let bearerToken = "test_token"
@@ -27,7 +27,7 @@ struct HubClientTests {
 
         #expect(client.host.absoluteString.hasPrefix(host.absoluteString))
         #expect(client.userAgent == userAgent)
-        #expect(client.bearerToken == bearerToken)
+        #expect(await client.bearerToken == bearerToken)
     }
 
     @Test("Client normalizes host URL with trailing slash")

@@ -329,7 +329,7 @@ import Testing
 
             let client = createMockClient()
 
-            await #expect(throws: InferenceClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.textToImage(
                     model: "unavailable-model",
                     prompt: "Test prompt"
@@ -358,7 +358,7 @@ import Testing
 
             let client = createMockClient()
 
-            await #expect(throws: InferenceClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.textToImage(
                     model: "stabilityai/stable-diffusion-xl-base-1.0",
                     prompt: "inappropriate content"

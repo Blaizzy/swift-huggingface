@@ -259,7 +259,7 @@ import Testing
 
             let client = createMockClient(bearerToken: nil)
 
-            await #expect(throws: HubClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.createRepo(kind: .model, name: "test-model")
             }
         }
@@ -285,7 +285,7 @@ import Testing
 
             let client = createMockClient()
 
-            await #expect(throws: HubClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.createRepo(kind: .model, name: "existing-model")
             }
         }

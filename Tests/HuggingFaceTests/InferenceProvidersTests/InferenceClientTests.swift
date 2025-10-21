@@ -35,7 +35,7 @@ import Testing
 
             #expect(client.host == host.appendingPathComponent(""))
             #expect(client.userAgent == "CustomAgent/1.0")
-            #expect(client.bearerToken == "test_token")
+            #expect(await client.bearerToken == "test_token")
         }
 
         @Test("Client sends authorization header when token provided", .mockURLSession)
@@ -107,7 +107,7 @@ import Testing
             let client = createMockClient()
             let messages = [ChatCompletion.Message(role: .user, content: .text("Hello"))]
 
-            await #expect(throws: InferenceClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.chatCompletion(
                     model: "test-model",
                     messages: messages
@@ -137,7 +137,7 @@ import Testing
             let client = createMockClient()
             let messages = [ChatCompletion.Message(role: .user, content: .text("Hello"))]
 
-            await #expect(throws: InferenceClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.chatCompletion(
                     model: "nonexistent-model",
                     messages: messages
@@ -167,7 +167,7 @@ import Testing
             let client = createMockClient()
             let messages = [ChatCompletion.Message(role: .user, content: .text("Hello"))]
 
-            await #expect(throws: InferenceClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.chatCompletion(
                     model: "test-model",
                     messages: messages
@@ -191,7 +191,7 @@ import Testing
             let client = createMockClient()
             let messages = [ChatCompletion.Message(role: .user, content: .text("Hello"))]
 
-            await #expect(throws: InferenceClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.chatCompletion(
                     model: "test-model",
                     messages: messages
@@ -215,7 +215,7 @@ import Testing
             let client = createMockClient()
             let messages = [ChatCompletion.Message(role: .user, content: .text("Hello"))]
 
-            await #expect(throws: InferenceClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.chatCompletion(
                     model: "test-model",
                     messages: messages
@@ -257,7 +257,7 @@ import Testing
             let client = createMockClient()
             let messages = [ChatCompletion.Message(role: .user, content: .text("Hello"))]
 
-            await #expect(throws: InferenceClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.chatCompletion(
                     model: "test-model",
                     messages: messages

@@ -618,7 +618,7 @@ extension InferenceClient {
             params["response_format"] = try .init(responseFormat)
         }
 
-        return try await fetch(.post, "/v1/chat/completions", params: params)
+        return try await httpClient.fetch(.post, "/v1/chat/completions", params: params)
     }
 
     /// Performs a streaming chat completion request.
@@ -696,7 +696,7 @@ extension InferenceClient {
             ])
         }
 
-        return fetchStream(.post, "/v1/chat/completions", params: params)
+        return httpClient.fetchStream(.post, "/v1/chat/completions", params: params)
     }
 }
 

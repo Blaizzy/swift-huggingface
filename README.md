@@ -25,33 +25,58 @@ dependencies: [
 
 ## Usage
 
-This package provides three main APIs in the `HuggingFace` module:
+### Authentication
 
-- **Hub API**: For managing models, datasets, spaces, and repositories on Hugging Face
-- **Inference Providers API**: For running AI tasks like chat completion, text-to-image generation, and more
-- **OAuth API**: For secure user authentication using OAuth 2.0 with PKCE
+The Hugging Face API supports multiple authentication methods depending on your use case.
+
+For development and CI/CD environments, tokens are automatically detected from
+the environment and local files:
+
+1. `HF_TOKEN` environment variable
+2. `HUGGING_FACE_HUB_TOKEN` environment variable  
+3. `HF_TOKEN_PATH` environment variable (path to token file)
+4. `$HF_HOME/token` file
+5. `~/.cache/huggingface/token` (standard HF CLI location)
+6. `~/.huggingface/token` (fallback location)
+
+```swift
+import HuggingFace
+
+// Automatically detects token from environment
+let client = HubClient.default
+let userInfo = try await client.whoami()
+```
+
+For user-facing applications that need to authenticate users:
+
+```swift
+import HuggingFace
+
+// Create authentication manager
+let authManager = try HuggingFaceAuthenticationManager(
+    clientID: "your_client_id",
+    redirectURL: URL(string: "yourapp://oauth/callback")!,
+    scope: [.openid, .profile, .email],
+    keychainService: "com.yourapp.huggingface",
+    keychainAccount: "user_token"
+)
+
+// Sign in user
+try await authManager.signIn()
+
+// Use with clients
+let client = InferenceClient(tokenProvider: .oauth(manager: authManager))
+```
+
+---
 
 ### Hub API
 
 ```swift
 import HuggingFace
 
-// Create a client with default settings
+// Create a client (uses auto-detected credentials from environment)
 let client = HubClient.default
-
-// Create a client with authentication
-let authenticatedClient = HubClient(
-    host: HubClient.defaultHost,
-    bearerToken: "your_huggingface_token"
-)
-
-// Create a client with custom configuration
-let customClient = HubClient(
-    session: URLSession(configuration: .default),
-    host: URL(string: "https://huggingface.co")!,
-    userAgent: "MyApp/1.0",
-    bearerToken: "your_token"
-)
 ```
 
 #### Models
@@ -439,7 +464,7 @@ if let nextURL = page1.nextURL {
 ```swift
 do {
     let modelInfo = try await client.getModel("nonexistent/model")
-} catch let error as HubClient.ClientError {
+} catch let error as HTTPClientError {
     switch error {
     case .requestError(let detail):
         print("Request error: \(detail)")
@@ -672,27 +697,14 @@ do {
 The Inference Providers API allows you to run AI tasks using various models and providers. 
 It automatically handles authentication and routing to the best provider for your needs.
 
-#### Creating an Inference HubClient
+#### Creating an Inference Client
 
 ```swift
 import HuggingFace
 
-// Create a client with auto-detected authentication
+// Create a client (uses auto-detected credentials from environment)
 let client = InferenceClient.default
-
-// Create a client with custom configuration
-let client = InferenceClient(
-    host: URL(string: "https://router.huggingface.co")!,
-    bearerToken: "your_huggingface_token"
-)
 ```
-
-The client automatically detects authentication tokens from:
-- `HF_TOKEN` environment variable
-- `HUGGING_FACE_HUB_TOKEN` environment variable
-- `HF_TOKEN_PATH` file
-- `~/.cache/huggingface/token` (standard HF CLI location)
-- `~/.huggingface/token`
 
 #### Chat Completion
 
@@ -844,29 +856,7 @@ print("Transcription: \(response.text)")
 
 ### OAuth Authentication
 
-The OAuth API provides secure user authentication using OAuth 2.0 with PKCE (Proof Key for Code Exchange). 
-This allows your app to authenticate users and access their Hugging Face resources on their behalf.
-
-#### Basic Authentication Setup
-
-```swift
-import HuggingFace
-
-// Create an authentication manager
-let authManager = try HuggingFaceAuthenticationManager(
-    clientID: "your_client_id",
-    redirectURL: URL(string: "yourapp://oauth/callback")!,
-    scope: [.openid, .profile, .email],
-    keychainService: "com.yourapp.huggingface",
-    keychainAccount: "user_token"
-)
-
-// Sign in the user
-try await authManager.signIn()
-
-// Get a valid token for API calls
-let token = try await authManager.getValidToken()
-```
+The OAuth API provides secure user authentication using OAuth 2.0 with PKCE. This allows your app to authenticate users and access their Hugging Face resources on their behalf.
 
 #### Available OAuth Scopes
 
@@ -892,44 +882,3 @@ let token = try await authManager.getValidToken()
 | `.fullAccess` | `openid`, `profile`, `email`, `manageRepos`, `inferenceAPI` |
 | `.inferenceOnly` | `openid`, `inferenceAPI` |
 | `.discussions` | `openid`, `profile`, `email`, `writeDiscussions` |
-
-#### Integrating OAuth with Hub API
-
-```swift
-// Create authenticated Hub client using OAuth token
-let hubClient = HubClient(
-    host: HubClient.defaultHost,
-    bearerToken: try await authManager.getValidToken()
-)
-
-// Now you can access user-specific resources
-let userInfo = try await hubClient.whoami()
-print("Authenticated as: \(userInfo.name)")
-
-// Create repositories on behalf of the user
-let repo = try await hubClient.createRepo(
-    kind: .model,
-    name: "my-model",
-    organization: nil,
-    visibility: .private
-)
-```
-
-#### Integrating OAuth with Inference API
-
-```swift
-// Create authenticated Inference client using OAuth token
-let inferenceClient = InferenceClient(
-    host: URL(string: "https://router.huggingface.co")!,
-    bearerToken: try await authManager.getValidToken()
-)
-
-// Make inference requests on behalf of the user
-let response = try await inferenceClient.chatCompletion(
-    model: "meta-llama/Llama-3.3-70B-Instruct",
-    messages: [
-        .user("Hello! How can I help you today?")
-    ],
-    provider: .groq
-)
-```

@@ -29,7 +29,7 @@ extension HubClient {
             params["organization"] = .string(organization)
         }
 
-        let response: CreateResponse = try await fetch(.post, "/api/repos/create", params: params)
+        let response: CreateResponse = try await httpClient.fetch(.post, "/api/repos/create", params: params)
         return (url: response.url, repoId: response.repoID)
     }
 
@@ -52,7 +52,7 @@ extension HubClient {
         let data = try encoder.encode(settings)
         let params = try JSONDecoder().decode([String: Value].self, from: data)
 
-        return try await fetch(.put, path, params: params)
+        return try await httpClient.fetch(.put, path, params: params)
     }
 
     /// Moves a repository to a new location.
@@ -74,7 +74,7 @@ extension HubClient {
             "type": .string(kind.rawValue),
         ]
 
-        return try await fetch(.post, "/api/repos/move", params: params)
+        return try await httpClient.fetch(.post, "/api/repos/move", params: params)
     }
 }
 

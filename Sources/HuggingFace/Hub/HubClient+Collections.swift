@@ -25,7 +25,7 @@ extension HubClient {
         if let sort { params["sort"] = .string(sort) }
         if let limit { params["limit"] = .int(limit) }
 
-        return try await fetchPaginated(.get, "/api/collections", params: params)
+        return try await httpClient.fetchPaginated(.get, "/api/collections", params: params)
     }
 
     /// Gets information for a specific collection.
@@ -34,7 +34,7 @@ extension HubClient {
     /// - Returns: Information about the collection.
     /// - Throws: An error if the request fails or the response cannot be decoded.
     public func getCollection(_ slug: String) async throws -> Collection {
-        return try await fetch(.get, "/api/collections/\(slug)")
+        return try await httpClient.fetch(.get, "/api/collections/\(slug)")
     }
 
     // MARK: - Collection Items Management
@@ -66,7 +66,7 @@ extension HubClient {
             "note": note.map { .string($0) } ?? .null,
         ]
 
-        return try await fetch(.post, apiPath, params: params)
+        return try await httpClient.fetch(.post, apiPath, params: params)
     }
 
     /// Batch updates items in a collection.
@@ -94,7 +94,7 @@ extension HubClient {
             return value
         }
 
-        _ = try await fetchData(.post, apiPath, params: ["": .array(params)])
+        _ = try await httpClient.fetchData(.post, apiPath, params: ["": .array(params)])
         return true
     }
 
@@ -114,7 +114,7 @@ extension HubClient {
         itemId: String
     ) async throws -> Bool {
         let apiPath = "/api/collections/\(namespace)/\(slug)-\(id)/items/\(itemId)"
-        let result: Bool = try await fetch(.delete, apiPath)
+        let result: Bool = try await httpClient.fetch(.delete, apiPath)
         return result
     }
 }

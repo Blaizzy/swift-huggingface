@@ -22,7 +22,7 @@ extension HubClient {
         if let sort { params["sort"] = .string(sort) }
         if let limit { params["limit"] = .int(limit) }
 
-        return try await fetchPaginated(.get, "/api/organizations", params: params)
+        return try await httpClient.fetchPaginated(.get, "/api/organizations", params: params)
     }
 
     /// Gets information for a specific organization.
@@ -31,7 +31,7 @@ extension HubClient {
     /// - Returns: Information about the organization.
     /// - Throws: An error if the request fails or the response cannot be decoded.
     public func getOrganization(_ id: String) async throws -> Organization {
-        return try await fetch(.get, "/api/organizations/\(id)")
+        return try await httpClient.fetch(.get, "/api/organizations/\(id)")
     }
 
     /// Lists members of an organization.
@@ -42,7 +42,7 @@ extension HubClient {
     /// - Returns: A list of organization members.
     /// - Throws: An error if the request fails or the response cannot be decoded.
     public func listOrganizationMembers(_ id: String) async throws -> [Organization.Member] {
-        return try await fetch(.get, "/api/organizations/\(id)/members")
+        return try await httpClient.fetch(.get, "/api/organizations/\(id)/members")
     }
 
     // MARK: - Organization Billing
@@ -63,7 +63,7 @@ extension HubClient {
         var params: [String: Value] = [:]
         if let periodId { params["periodId"] = .string(periodId) }
 
-        return try await fetch(.get, "/api/organizations/\(name)/billing/usage", params: params)
+        return try await httpClient.fetch(.get, "/api/organizations/\(name)/billing/usage", params: params)
     }
 
     /// Gets live organization billing usage.
@@ -74,7 +74,7 @@ extension HubClient {
     /// - Returns: Live organization billing usage information.
     /// - Throws: An error if the request fails or the response cannot be decoded.
     public func getOrganizationBillingUsageLive(name: String) async throws -> Billing.Usage {
-        return try await fetch(.get, "/api/organizations/\(name)/billing/usage/live")
+        return try await httpClient.fetch(.get, "/api/organizations/\(name)/billing/usage/live")
     }
 
     // MARK: - Organization Resource Groups
@@ -128,7 +128,7 @@ extension HubClient {
             if let role = autoJoin.role { auto["role"] = .string(role.rawValue) }
             params["autoJoin"] = .object(auto)
         }
-        let result: Bool = try await fetch(.post, path, params: params)
+        let result: Bool = try await httpClient.fetch(.post, path, params: params)
         return result
     }
 }

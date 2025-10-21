@@ -215,7 +215,7 @@ import Testing
 
             let client = createMockClient()  // No bearer token
 
-            await #expect(throws: HubClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.listOrganizationMembers("testorg")
             }
         }
@@ -241,7 +241,7 @@ import Testing
 
             let client = createMockClient()
 
-            await #expect(throws: HubClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.getOrganization("nonexistent")
             }
         }

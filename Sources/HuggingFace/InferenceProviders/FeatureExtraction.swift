@@ -56,7 +56,7 @@ extension InferenceClient {
             params["parameters"] = .object(parameters)
         }
 
-        return try await fetch(.post, "/v1/embeddings", params: params)
+        return try await httpClient.fetch(.post, "/v1/embeddings", params: params)
     }
 
     /// Convenience method for single text feature extraction.

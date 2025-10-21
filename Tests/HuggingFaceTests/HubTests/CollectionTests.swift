@@ -181,7 +181,7 @@ import Testing
 
             let client = createMockClient()
 
-            await #expect(throws: HubClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.getCollection("nonexistent/collection")
             }
         }

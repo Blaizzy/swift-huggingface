@@ -248,7 +248,7 @@ import Testing
 
             let client = createMockClient()
 
-            await #expect(throws: InferenceClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.featureExtraction(
                     model: "nonexistent-model",
                     input: "Test text"
@@ -277,7 +277,7 @@ import Testing
 
             let client = createMockClient()
 
-            await #expect(throws: InferenceClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.featureExtraction(
                     model: "sentence-transformers/all-MiniLM-L6-v2",
                     input: ""

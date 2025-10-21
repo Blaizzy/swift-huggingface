@@ -80,6 +80,6 @@ extension InferenceClient {
             params["parameters"] = .object(parameters)
         }
 
-        return try await fetch(.post, "/v1/audio/transcriptions", params: params)
+        return try await httpClient.fetch(.post, "/v1/audio/transcriptions", params: params)
     }
 }

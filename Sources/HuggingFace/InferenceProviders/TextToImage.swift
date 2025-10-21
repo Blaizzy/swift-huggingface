@@ -168,7 +168,7 @@ extension InferenceClient {
             params["controlnet"] = try .init(controlnet)
         }
 
-        return try await fetch(.post, "/v1/images/generations", params: params)
+        return try await httpClient.fetch(.post, "/v1/images/generations", params: params)
     }
 }
 

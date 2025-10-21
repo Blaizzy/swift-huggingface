@@ -22,7 +22,7 @@ extension HubClient {
         if let sort { params["sort"] = .string(sort) }
         if let limit { params["limit"] = .int(limit) }
 
-        return try await fetchPaginated(.get, "/api/papers", params: params)
+        return try await httpClient.fetchPaginated(.get, "/api/papers", params: params)
     }
 
     /// Gets information for a specific paper.
@@ -31,7 +31,7 @@ extension HubClient {
     /// - Returns: Information about the paper.
     /// - Throws: An error if the request fails or the response cannot be decoded.
     public func getPaper(_ id: String) async throws -> Paper {
-        return try await fetch(.get, "/api/papers/\(id)")
+        return try await httpClient.fetch(.get, "/api/papers/\(id)")
     }
 
     /// Lists daily papers from the Hub.
@@ -65,6 +65,6 @@ extension HubClient {
         if let submitter { params["submitter"] = .string(submitter) }
         if let sort { params["sort"] = .string(sort) }
 
-        return try await fetch(.get, "/api/daily_papers", params: params)
+        return try await httpClient.fetch(.get, "/api/daily_papers", params: params)
     }
 }

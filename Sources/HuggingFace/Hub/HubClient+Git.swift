@@ -61,7 +61,7 @@ extension HubClient {
     ) async throws -> [Git.TreeEntry] {
         let pathComponent = path.map { "/\($0)" } ?? ""
         let apiPath = "/api/\(repoKind.pluralized)/\(id.namespace)/\(id.name)/tree/\(revision)\(pathComponent)"
-        return try await fetch(.get, apiPath)
+        return try await httpClient.fetch(.get, apiPath)
     }
 
     // MARK: - Refs Operations
@@ -98,7 +98,7 @@ extension HubClient {
         id: Repo.ID
     ) async throws -> (branches: [Git.Ref], tags: [Git.Ref]?) {
         let apiPath = "/api/\(repoKind.pluralized)/\(id.namespace)/\(id.name)/refs"
-        let response: RefsResponse = try await fetch(.get, apiPath)
+        let response: RefsResponse = try await httpClient.fetch(.get, apiPath)
         return (branches: response.branches, tags: response.tags)
     }
 
@@ -152,7 +152,7 @@ extension HubClient {
         revision: String
     ) async throws -> [Git.Commit] {
         let apiPath = "/api/\(repoKind.pluralized)/\(id.namespace)/\(id.name)/commits/\(revision)"
-        return try await fetch(.get, apiPath)
+        return try await httpClient.fetch(.get, apiPath)
     }
 
     // MARK: - File Download Operations
@@ -224,7 +224,7 @@ extension HubClient {
         let filePath = "/\(id.namespace)/\(id.name)/resolve/\(revision)/\(path)"
         let fullPath = prefix + filePath
 
-        return try await fetchData(.get, fullPath)
+        return try await httpClient.fetchData(.get, fullPath)
     }
 
     // MARK: - Tree Size Operations
@@ -285,7 +285,7 @@ extension HubClient {
     ) async throws -> (path: String, size: Int) {
         let pathComponent = path.isEmpty ? "" : "/\(path)"
         let apiPath = "/api/\(repoKind.pluralized)/\(id.namespace)/\(id.name)/treesize/\(revision)\(pathComponent)"
-        let response: TreeSizeResponse = try await fetch(.get, apiPath)
+        let response: TreeSizeResponse = try await httpClient.fetch(.get, apiPath)
         return (path: response.path, size: response.size)
     }
 
@@ -387,7 +387,7 @@ extension HubClient {
             params["overwrite"] = .bool(overwrite)
         }
 
-        let result: Bool = try await fetch(.post, apiPath, params: params)
+        let result: Bool = try await httpClient.fetch(.post, apiPath, params: params)
         return result
     }
 
@@ -439,7 +439,7 @@ extension HubClient {
         branchName: String
     ) async throws -> Bool {
         let apiPath = "/api/\(repoKind.pluralized)/\(id.namespace)/\(id.name)/branch/\(branchName)"
-        let result: Bool = try await fetch(.delete, apiPath)
+        let result: Bool = try await httpClient.fetch(.delete, apiPath)
         return result
     }
 
@@ -506,7 +506,7 @@ extension HubClient {
             params["raw"] = .bool(raw)
         }
 
-        return try await fetch(.get, apiPath, params: params)
+        return try await httpClient.fetch(.get, apiPath, params: params)
     }
 }
 

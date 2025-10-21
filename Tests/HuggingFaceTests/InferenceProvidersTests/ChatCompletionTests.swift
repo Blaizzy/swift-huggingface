@@ -433,7 +433,7 @@ import Testing
                 ChatCompletion.Message(role: .user, content: .text("Hello"))
             ]
 
-            await #expect(throws: InferenceClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.chatCompletion(
                     model: "gpt-3.5-turbo",
                     messages: messages

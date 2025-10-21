@@ -156,7 +156,7 @@ import Testing
 
             let client = createMockClient()
 
-            await #expect(throws: InferenceClient.ClientError.self) {
+            await #expect(throws: HTTPClientError.self) {
                 _ = try await client.speechToText(
                     model: "openai/whisper-large-v3",
                     audio: "invalid_audio_data"

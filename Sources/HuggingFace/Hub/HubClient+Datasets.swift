@@ -37,7 +37,7 @@ extension HubClient {
         if let full { params["full"] = .bool(full) }
         if let config { params["config"] = .bool(config) }
 
-        return try await fetchPaginated(.get, "/api/datasets", params: params)
+        return try await httpClient.fetchPaginated(.get, "/api/datasets", params: params)
     }
 
     /// Gets information for a specific dataset.
@@ -63,7 +63,7 @@ extension HubClient {
         var params: [String: Value] = [:]
         if let full { params["full"] = .bool(full) }
 
-        return try await fetch(.get, path, params: params)
+        return try await httpClient.fetch(.get, path, params: params)
     }
 
     /// Gets all available dataset tags hosted in the Hub.
@@ -71,7 +71,7 @@ extension HubClient {
     /// - Returns: Tag information organized by type.
     /// - Throws: An error if the request fails or the response cannot be decoded.
     public func getDatasetTags() async throws -> Tags {
-        return try await fetch(.get, "/api/datasets-tags-by-type")
+        return try await httpClient.fetch(.get, "/api/datasets-tags-by-type")
     }
 
     /// Lists Parquet files for a dataset.
@@ -96,7 +96,7 @@ extension HubClient {
             }
         }
 
-        return try await fetch(.get, path)
+        return try await httpClient.fetch(.get, path)
     }
 
     // MARK: - Dataset Access Requests
@@ -118,7 +118,7 @@ extension HubClient {
         var params: [String: Value] = [:]
         if let reason { params["reason"] = .string(reason) }
         if let institution { params["institution"] = .string(institution) }
-        let result: Bool = try await fetch(.post, path, params: params)
+        let result: Bool = try await httpClient.fetch(.post, path, params: params)
         return result
     }
 
@@ -129,7 +129,7 @@ extension HubClient {
     /// - Throws: An error if the request fails.
     public func cancelDatasetAccessRequest(_ id: Repo.ID) async throws -> Bool {
         let path = "/api/datasets/\(id.namespace)/\(id.name)/user-access-request/cancel"
-        let result: Bool = try await fetch(.post, path)
+        let result: Bool = try await httpClient.fetch(.post, path)
         return result
     }
 
@@ -140,7 +140,7 @@ extension HubClient {
     /// - Throws: An error if the request fails.
     public func grantDatasetAccess(_ id: Repo.ID) async throws -> Bool {
         let path = "/api/datasets/\(id.namespace)/\(id.name)/user-access-request/grant"
-        let result: Bool = try await fetch(.post, path)
+        let result: Bool = try await httpClient.fetch(.post, path)
         return result
     }
 
@@ -151,7 +151,7 @@ extension HubClient {
     /// - Throws: An error if the request fails.
     public func handleDatasetAccessRequest(_ id: Repo.ID) async throws -> Bool {
         let path = "/api/datasets/\(id.namespace)/\(id.name)/user-access-request/handle"
-        let result: Bool = try await fetch(.post, path)
+        let result: Bool = try await httpClient.fetch(.post, path)
         return result
     }
 
@@ -167,7 +167,7 @@ extension HubClient {
         status: AccessRequest.Status
     ) async throws -> [AccessRequest] {
         let path = "/api/datasets/\(id.namespace)/\(id.name)/user-access-request/\(status.rawValue)"
-        return try await fetch(.get, path)
+        return try await httpClient.fetch(.get, path)
     }
 
     /// Gets user access report for a dataset repository.
@@ -177,7 +177,7 @@ extension HubClient {
     /// - Throws: An error if the request fails.
     public func getDatasetUserAccessReport(_ id: Repo.ID) async throws -> Data {
         let path = "/datasets/\(id.namespace)/\(id.name)/user-access-report"
-        return try await fetchData(.get, path)
+        return try await httpClient.fetchData(.get, path)
     }
 
     // MARK: - Dataset Advanced Features
@@ -199,7 +199,7 @@ extension HubClient {
             "resourceGroupId": resourceGroupId.map { .string($0) } ?? .null
         ]
 
-        return try await fetch(.post, path, params: params)
+        return try await httpClient.fetch(.post, path, params: params)
     }
 
     /// Scans a dataset repository.
@@ -209,7 +209,7 @@ extension HubClient {
     /// - Throws: An error if the request fails.
     public func scanDataset(_ id: Repo.ID) async throws -> Bool {
         let path = "/api/datasets/\(id.namespace)/\(id.name)/scan"
-        let result: Bool = try await fetch(.post, path)
+        let result: Bool = try await httpClient.fetch(.post, path)
         return result
     }
 
@@ -235,7 +235,7 @@ extension HubClient {
             "message": message.map { .string($0) } ?? .null,
         ]
 
-        let result: Bool = try await fetch(.post, path, params: params)
+        let result: Bool = try await httpClient.fetch(.post, path, params: params)
         return result
     }
 
@@ -259,7 +259,7 @@ extension HubClient {
         ]
 
         struct Response: Decodable { let commitID: String }
-        let resp: Response = try await fetch(.post, path, params: params)
+        let resp: Response = try await httpClient.fetch(.post, path, params: params)
         return resp.commitID
     }
 }
