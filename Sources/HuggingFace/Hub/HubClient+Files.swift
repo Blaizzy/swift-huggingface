@@ -47,7 +47,7 @@ public extension HubClient {
         message: String? = nil
     ) async throws -> (path: String, commit: String?) {
         let urlPath = "/api/\(kind.pluralized)/\(repo)/upload/\(branch)"
-        var request = try await httpClient.createRequest(.post, urlPath)
+        var request = try httpClient.createRequest(.post, urlPath)
 
         let boundary = "----hf-\(UUID().uuidString)"
         request.setValue(
@@ -184,7 +184,7 @@ public extension HubClient {
     ) async throws -> Data {
         let endpoint = useRaw ? "raw" : "resolve"
         let urlPath = "/\(repo)/\(endpoint)/\(revision)/\(repoPath)"
-        var request = try await httpClient.createRequest(.get, urlPath)
+        var request = try httpClient.createRequest(.get, urlPath)
         request.cachePolicy = cachePolicy
 
         let (data, response) = try await session.data(for: request)
@@ -216,7 +216,7 @@ public extension HubClient {
     ) async throws -> URL {
         let endpoint = useRaw ? "raw" : "resolve"
         let urlPath = "/\(repo)/\(endpoint)/\(revision)/\(repoPath)"
-        var request = try await httpClient.createRequest(.get, urlPath)
+        var request = try httpClient.createRequest(.get, urlPath)
         request.cachePolicy = cachePolicy
 
         let (tempURL, response) = try await session.download(
@@ -421,7 +421,7 @@ public extension HubClient {
         revision: String = "main"
     ) async throws -> File {
         let urlPath = "/\(repo)/resolve/\(revision)/\(repoPath)"
-        var request = try await httpClient.createRequest(.head, urlPath)
+        var request = try httpClient.createRequest(.head, urlPath)
         request.setValue("bytes=0-0", forHTTPHeaderField: "Range")
 
         do {

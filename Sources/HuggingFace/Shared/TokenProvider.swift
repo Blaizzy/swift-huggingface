@@ -177,27 +177,31 @@ public indirect enum TokenProvider: Sendable {
     /// let token = try await provider.getToken()
     /// // Returns: "hf_abc123"
     /// ```
-    public func getToken() async throws -> String? {
+    public func getToken() throws -> String? {
         switch self {
         case .fixed(let token):
             return token
 
         case .environment:
-            return try await getTokenFromEnvironment()
+            return try getTokenFromEnvironment()
 
         case .oauth(let manager):
-            return try await manager.getValidToken()
+            fatalError(
+                "OAuth token provider requires async context. Use getToken() in an async context or switch to a synchronous provider."
+            )
 
         case .composite(let providers):
             for provider in providers {
-                if let token = try await provider.getToken() {
+                if let token = try provider.getToken() {
                     return token
                 }
             }
             return nil
 
         case .custom(let implementation):
-            return try await implementation()
+            fatalError(
+                "Custom async token provider requires async context. Use getToken() in an async context or switch to a synchronous provider."
+            )
 
         case .none:
             return nil
@@ -267,7 +271,7 @@ private func readTokenFromPath(_ path: String, fileManager: FileManager = .defau
 private func getTokenFromEnvironment(
     _ env: [String: String] = ProcessInfo.processInfo.environment,
     fileManager: FileManager = .default
-) async throws -> String? {
+) throws -> String? {
     let tokenSources: [() -> String?] = [
         { env["HF_TOKEN"] },
         { env["HUGGING_FACE_HUB_TOKEN"] },
