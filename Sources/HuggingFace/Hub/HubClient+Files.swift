@@ -1,5 +1,8 @@
 import Foundation
-import UniformTypeIdentifiers
+
+#if canImport(UniformTypeIdentifiers)
+    import UniformTypeIdentifiers
+#endif
 
 #if canImport(FoundationNetworking)
     import FoundationNetworking
@@ -286,10 +289,14 @@ public extension HubClient {
         var request = try await httpClient.createRequest(.get, url: url)
         request.cachePolicy = cachePolicy
 
-        let (tempURL, response) = try await session.download(
-            for: request,
-            delegate: progress.map { DownloadProgressDelegate(progress: $0) }
-        )
+        #if canImport(FoundationNetworking)
+            let (tempURL, response) = try await session.asyncDownload(for: request, progress: progress)
+        #else
+            let (tempURL, response) = try await session.download(
+                for: request,
+                delegate: progress.map { DownloadProgressDelegate(progress: $0) }
+            )
+        #endif
         _ = try httpClient.validateResponse(response, data: nil)
 
         // Store in cache before moving to destination
@@ -322,29 +329,35 @@ public extension HubClient {
         return destination
     }
 
-    /// Download file with resume capability
-    /// - Parameters:
-    ///   - resumeData: Resume data from a previous download attempt
-    ///   - destination: Destination URL for downloaded file
-    ///   - progress: Optional Progress object to track download progress
-    /// - Returns: Final destination URL
-    func resumeDownloadFile(
-        resumeData: Data,
-        to destination: URL,
-        progress: Progress? = nil
-    ) async throws -> URL {
-        let (tempURL, response) = try await session.download(
-            resumeFrom: resumeData,
-            delegate: progress.map { DownloadProgressDelegate(progress: $0) }
-        )
-        _ = try httpClient.validateResponse(response, data: nil)
+    #if !canImport(FoundationNetworking)
+        /// Download file with resume capability
+        ///
+        /// - Note: This method is only available on Apple platforms.
+        ///   On Linux, resume functionality is not supported.
+        ///
+        /// - Parameters:
+        ///   - resumeData: Resume data from a previous download attempt
+        ///   - destination: Destination URL for downloaded file
+        ///   - progress: Optional Progress object to track download progress
+        /// - Returns: Final destination URL
+        func resumeDownloadFile(
+            resumeData: Data,
+            to destination: URL,
+            progress: Progress? = nil
+        ) async throws -> URL {
+            let (tempURL, response) = try await session.download(
+                resumeFrom: resumeData,
+                delegate: progress.map { DownloadProgressDelegate(progress: $0) }
+            )
+            _ = try httpClient.validateResponse(response, data: nil)
 
-        // Move from temporary location to final destination
-        try? FileManager.default.removeItem(at: destination)
-        try FileManager.default.moveItem(at: tempURL, to: destination)
+            // Move from temporary location to final destination
+            try? FileManager.default.removeItem(at: destination)
+            try FileManager.default.moveItem(at: tempURL, to: destination)
 
-        return destination
-    }
+            return destination
+        }
+    #endif
 
     /// Download file to a destination URL (convenience method without progress tracking)
     /// - Parameters:
@@ -380,32 +393,34 @@ public extension HubClient {
 
 // MARK: - Progress Delegate
 
-private final class DownloadProgressDelegate: NSObject, URLSessionDownloadDelegate, @unchecked Sendable {
-    private let progress: Progress
+#if !canImport(FoundationNetworking)
+    private final class DownloadProgressDelegate: NSObject, URLSessionDownloadDelegate, @unchecked Sendable {
+        private let progress: Progress
 
-    init(progress: Progress) {
-        self.progress = progress
-    }
+        init(progress: Progress) {
+            self.progress = progress
+        }
 
-    func urlSession(
-        _: URLSession,
-        downloadTask _: URLSessionDownloadTask,
-        didWriteData _: Int64,
-        totalBytesWritten: Int64,
-        totalBytesExpectedToWrite: Int64
-    ) {
-        progress.totalUnitCount = totalBytesExpectedToWrite
-        progress.completedUnitCount = totalBytesWritten
-    }
+        func urlSession(
+            _: URLSession,
+            downloadTask _: URLSessionDownloadTask,
+            didWriteData _: Int64,
+            totalBytesWritten: Int64,
+            totalBytesExpectedToWrite: Int64
+        ) {
+            progress.totalUnitCount = totalBytesExpectedToWrite
+            progress.completedUnitCount = totalBytesWritten
+        }
 
-    func urlSession(
-        _: URLSession,
-        downloadTask _: URLSessionDownloadTask,
-        didFinishDownloadingTo _: URL
-    ) {
-        // The actual file handling is done in the async/await layer
+        func urlSession(
+            _: URLSession,
+            downloadTask _: URLSessionDownloadTask,
+            didFinishDownloadingTo _: URL
+        ) {
+            // The actual file handling is done in the async/await layer
+        }
     }
-}
+#endif
 
 // MARK: - Delete Operations
 
@@ -633,9 +648,107 @@ private struct UploadResponse: Codable {
 
 private extension URL {
     var mimeType: String? {
-        guard let uti = UTType(filenameExtension: pathExtension) else {
-            return nil
-        }
-        return uti.preferredMIMEType
+        #if canImport(UniformTypeIdentifiers)
+            guard let uti = UTType(filenameExtension: pathExtension) else {
+                return nil
+            }
+            return uti.preferredMIMEType
+        #else
+            // Fallback MIME type lookup for Linux
+            let ext = pathExtension.lowercased()
+            switch ext {
+            // MARK: - JSON
+            case "json":
+                return "application/json"
+            // MARK: - Text
+            case "txt":
+                return "text/plain"
+            case "md":
+                return "text/markdown"
+            case "csv":
+                return "text/csv"
+            case "tsv":
+                return "text/tab-separated-values"
+            // MARK: - HTML and Markup
+            case "html", "htm":
+                return "text/html"
+            case "xml":
+                return "application/xml"
+            case "svg":
+                return "image/svg+xml"
+            case "yaml", "yml":
+                return "application/x-yaml"
+            case "toml":
+                return "application/toml"
+            // MARK: - Code
+            case "js":
+                return "application/javascript"
+            case "py":
+                return "text/x-python"
+            case "swift":
+                return "text/x-swift"
+            case "css":
+                return "text/css"
+            case "ipynb":
+                return "application/x-ipynb+json"
+            // MARK: - Archives and Compressed
+            case "zip":
+                return "application/zip"
+            case "gz", "gzip":
+                return "application/gzip"
+            case "tar":
+                return "application/x-tar"
+            case "bz2":
+                return "application/x-bzip2"
+            case "7z":
+                return "application/x-7z-compressed"
+            // MARK: - PDF and Documents
+            case "pdf":
+                return "application/pdf"
+            // MARK: - Images
+            case "png":
+                return "image/png"
+            case "jpg", "jpeg":
+                return "image/jpeg"
+            case "gif":
+                return "image/gif"
+            case "webp":
+                return "image/webp"
+            case "bmp":
+                return "image/bmp"
+            case "tiff", "tif":
+                return "image/tiff"
+            // MARK: - Audio
+            case "m4a":
+                return "audio/mp4"
+            case "mp3":
+                return "audio/mpeg"
+            case "wav":
+                return "audio/wav"
+            case "flac":
+                return "audio/flac"
+            case "ogg":
+                return "audio/ogg"
+            // MARK: - Video
+            case "mp4":
+                return "video/mp4"
+            case "webm":
+                return "video/webm"
+            // MARK: - ML/Model/Raw Data
+            case "bin", "safetensors", "gguf", "ggml":
+                return "application/octet-stream"
+            case "pt", "pth":
+                return "application/octet-stream"
+            case "onnx":
+                return "application/octet-stream"
+            case "ckpt":
+                return "application/octet-stream"
+            case "npz":
+                return "application/octet-stream"
+            // MARK: - Default
+            default:
+                return "application/octet-stream"
+            }
+        #endif
     }
 }
